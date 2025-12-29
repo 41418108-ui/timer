@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Efficiency Hub</title>
+    <style>
+        :root {
+            --pomo-orange: #FF5722;
+            --bmi-green: #2E7D32;
+            --bg-yellow: #FFF9C4;
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
+        * { box-sizing: border-box; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-yellow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 導覽按鈕 Vibe */
+        .nav-container {
+            margin-top: 50px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .vibe-card {
+            width: 200px;
+            height: 150px;
+            border-radius: 24px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .vibe-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+        .btn-p { background: var(--pomo-orange); }
+        .btn-b { background: var(--bmi-green); }
+
+        /* 功能區間樣式 */
+        .content-section {
+            display: none;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+        .active { display: flex; flex-direction: column; align-items: center; }
+
+        /* 番茄鐘實體 500x500 */
+        #pomodoro-timer {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle at 30% 30%, #ff7043, #d84315);
+            border-radius: 50%;
+            border: 8px solid #bf360c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        #pomodoro-timer::before {
+            content: ''; position: absolute; top: -15px; width: 60px; height: 30px; background: #388E3C; border-radius: 10px;
+        }
+
+        #timer-text { font-size: 100px; font-weight: 200; margin-bottom: 20px; }
+        .warning { animation: blink 1s infinite; font-weight: bold; color: #ffeb3b; }
+        @keyframes blink { 50% { opacity: 0.3; } }
+
+        /* BMI 卡片樣式 */
+        .bmi-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 32px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .action-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* 截止閃爍背景 */
+        .alarm-vibe { animation: flash-bg 0.5s infinite; }
+        @keyframes flash-bg { 
+            0%, 100% { background-color: var(--bg-yellow); } 
+            50% { background-color: #4E342E; } 
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px;
+            text-align: center;
+            color: #5D4037;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-container">
+        <button class="vibe-card btn-p" onclick="showView('pomo-view')">🍅 番茄鐘</button>
+        <button class="vibe-card btn-b" onclick="showView('bmi-view')">⚖️ BMI 計算</button>
+    </div>
+
+    <div id="pomo-view" class="content-section">
+        <div id="pomodoro-timer">
+            <div id="timer-text">25:00</div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="number" id="m-in" value="25" style="width: 60px;">
+                <input type="number" id="s-in" value="0" style="width: 60px;">
+            </div>
+            <div>
+                <button class="action-btn" onclick="pStart()" style="background: #FFEB3B; color: #333;">開始計時</button>
+                <button class="action-btn" onclick="pReset()" style="background: white; color: #333;">清除</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bmi-view" class="content-section">
+        <div class="bmi-card">
+            <h2 style="color: var(--bmi-green); margin-top: 0;">Body Mass Index</h2>
+            <input type="number" id="bh" placeholder="身高 (cm)">
+            <input type="number" id="bw" placeholder="體重 (kg)">
+            <button class="action-btn" onclick="bCalc()" style="background: var(--bmi-green); width: 100%;">計算健康數值</button>
+            <div id="br" style="margin-top: 25px; font-size: 1.5rem; font-weight: bold;"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div style="border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
+            學號：<strong>[41418108]</strong> &nbsp; | &nbsp; 
+            姓名：<strong>[曾鈺庭]</strong> &nbsp; | &nbsp; 
+            日期：<strong>2025 / 12 / 22</strong>
+        </div>
+    </footer>
+
+    <script>
+        let interval;
+        function showView(id) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            pReset();
+        }
+
+        // 番茄鐘
+        function pStart() {
+            clearInterval(interval);
+            document.body.classList.remove('alarm-vibe');
+            let sec = parseInt(document.getElementById('m-in').value)*60 + parseInt(document.getElementById('s-in').value);
+            const disp = document.getElementById('timer-text');
+            
+            interval = setInterval(() => {
+                if (sec <= 0) {
+                    clearInterval(interval);
+                    document.body.classList.add('alarm-vibe');
+                    return;
+                }
+                sec--;
+                let m = Math.floor(sec/60), s = sec%60;
+                disp.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                
+                if (sec > 0 && sec <= 180) disp.classList.add('warning');
+                else disp.classList.remove('warning');
+            }, 1000);
+        }
+
+        function pReset() {
+            clearInterval(interval);
+            document.body.classList.remove('alarm-vibe');
+            document.getElementById('timer-text').innerText = "25:00";
+            document.getElementById('timer-text').classList.remove('warning');
+        }
+
+        // BMI
+        function bCalc() {
+            const h = document.getElementById('bh').value / 100;
+            const w = document.getElementById('bw').value;
+            const res = document.getElementById('br');
+            if (h > 0 && w > 0) {
+                const bmi = (w / (h * h)).toFixed(1);
+                res.innerText = "您的 BMI: " + bmi;
+            } else {
+                alert("請填寫身高體重");
+            }
+        }
+    </script>
+</body>
+</html>
